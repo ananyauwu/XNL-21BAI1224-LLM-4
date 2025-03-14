@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: xnl-21bai1224-llm-4
+metadata:
+    template: azd-init@1.13.1
+services:
+    xnl-21bai1224-llm-4:
+        project: .
+        host: containerapp
+        language: python
