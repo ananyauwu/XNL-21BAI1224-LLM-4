@@ -6,8 +6,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import re
 import time
+import spacy
+import pytesseract
+from PIL import Image
+
 app = Flask(__name__)
 CORS(app)
+
+# Load spaCy model
+nlp = spacy.load("en_core_web_sm")
 
 # Logging configuration
 logging.basicConfig(level=logging.INFO)
@@ -27,6 +34,25 @@ api_key = get_env_variable('LLM_API_KEY')
 @app.route('/')
 def index():
     return app.send_static_file('interface.html')
+
+# Textual data preprocessing
+def preprocess_text(text):
+    doc = nlp(text)
+    entities = [(ent.text, ent.label_) for ent in doc.ents]
+    keywords = [token.text for token in doc if token.is_alpha and not token.is_stop]
+    sentiment = doc.sentiment
+    return {"entities": entities, "keywords": keywords, "sentiment": sentiment}
+
+# OCR for image data
+def extract_text_from_image(image_path):
+    image = Image.open(image_path)
+    text = pytesseract.image_to_string(image)
+    return text
+
+# Parse tabular data
+def parse_tabular_data(file_path):
+    df = pd.read_csv(file_path)
+    return df.to_dict()
 
 # Endpoint to handle chatbot queries
 @app.route('/chatbot', methods=['POST'])
