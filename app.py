@@ -63,7 +63,10 @@ def parse_tabular_data(file_path):
 # Define a function to handle null values/missing values in the dataset
 def handle_missing_values(examples):
     for key in examples.keys():
-        examples[key] = [value if value is not None else "N/A" for value in examples[key]]
+        if isinstance(examples[key], list):
+            examples[key] = [value if value is not None else "N/A" for value in examples[key]]
+        else:
+            examples[key] = examples[key] if examples[key] is not None else "N/A"
     return examples
 
 # Acquire the training data from Hugging Face
