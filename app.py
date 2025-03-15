@@ -96,13 +96,16 @@ prefix = "Please answer this question: "
 
 # Define the preprocessing function to ignore labels and take sentences only
 def preprocess_function(examples):
+    # Use the sentences as both inputs and labels (for language modeling)
     inputs = [prefix + doc for doc in examples["sentence"]]
-    model_inputs = tokenizer(inputs, max_length=128, truncation=True)
+    model_inputs = tokenizer(inputs, max_length=128, truncation=True, padding="max_length")
+    
+    # Use the same input as the target (labels) for language modeling
+    with tokenizer.as_target_tokenizer():
+        labels = tokenizer(inputs, max_length=128, truncation=True, padding="max_length")
+    model_inputs["labels"] = labels["input_ids"]
+    
     return model_inputs
-
-# Map the preprocessing function across our dataset
-train_dataset = train_dataset.map(preprocess_function, batched=True)
-test_dataset = test_dataset.map(preprocess_function, batched=True)
 
 print("After preprocessing:", train_dataset[0])
 
@@ -118,10 +121,7 @@ def compute_metrics(eval_preds):
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-    # ROUGE expects newline after each sentence
-    decoded_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in decoded_preds]
-    decoded_labels = ["\n".join(nltk.sent_tokenize(label.strip())) for label in decoded_labels]
-
+    # Calculate ROUGE score
     rouge = Rouge()
     result = rouge.get_scores(decoded_preds, decoded_labels, avg=True)
     return result
