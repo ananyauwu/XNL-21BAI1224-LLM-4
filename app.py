@@ -64,7 +64,8 @@ def parse_tabular_data(file_path):
 
 # Acquire the training data from Hugging Face
 DATA_NAME = "financial_phrasebank"
-financial_dataset = load_dataset(DATA_NAME)
+CONFIG_NAME = "sentences_allagree"
+financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
 
 # Fetch news data from NewsAPI
 def fetch_news_data(query, from_date):
