@@ -151,13 +151,13 @@ training_args = Seq2SeqTrainingArguments(
     gradient_accumulation_steps=2,  # Use gradient accumulation
     weight_decay=0.01,
     save_total_limit=3,
-    num_train_epochs=5,
+    num_train_epochs=3,
     predict_with_generate=True,
     push_to_hub=False,
     load_best_model_at_end=True,
     metric_for_best_model="eval_loss",
     greater_is_better=False,
-    no_cuda=True  # Force training on CPU
+    use_cpu=True  # Use CPU instead of no_cuda
 )
 
 # Set up the trainer
