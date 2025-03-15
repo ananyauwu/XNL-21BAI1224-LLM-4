@@ -65,7 +65,7 @@ def parse_tabular_data(file_path):
 ds = load_dataset("bilalRahib/fiqa-personal-finance-dataset", streaming=True)
 
 # Apply the function to remove missing values
-ds = ds.filter(lambda x: all(v is not None for v in x.values()))
+ds = ds.filter(lambda x: x["input"] is not None and x["output"] is not None)
 
 # Print the first 3 lines from the dataset
 print("First 3 lines from the dataset:")
