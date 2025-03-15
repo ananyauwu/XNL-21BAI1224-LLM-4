@@ -101,7 +101,6 @@ test_dataset = Dataset.from_dict(test_dataset)
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this question: "
 
-# Define the preprocessing function
 def preprocess_function(examples):
     inputs = [prefix + doc for doc in examples["sentence"]]
     model_inputs = tokenizer(inputs, max_length=128, truncation=True)
@@ -128,6 +127,9 @@ def format_labels(examples):
 
 train_dataset = train_dataset.map(format_labels, batched=True)
 test_dataset = test_dataset.map(format_labels, batched=True)
+
+print("Sample labels from train_dataset:", train_dataset[0]["labels"])
+print("Sample labels from test_dataset:", test_dataset[0]["labels"])
 
 # Download NLTK data
 nltk.download("punkt", quiet=True)
