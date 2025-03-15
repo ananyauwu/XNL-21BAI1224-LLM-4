@@ -98,12 +98,12 @@ prefix = "Please answer this question: "
 def preprocess_function(examples):
     # Use the sentences as both inputs and labels (for language modeling)
     inputs = [prefix + doc for doc in examples["sentence"]]
+    
+    # Tokenize inputs
     model_inputs = tokenizer(inputs, max_length=128, truncation=True, padding="max_length")
     
     # Use the same input as the target (labels) for language modeling
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(inputs, max_length=128, truncation=True, padding="max_length")
-    model_inputs["labels"] = labels["input_ids"]
+    model_inputs["labels"] = model_inputs["input_ids"]  # Set labels = input_ids
     
     return model_inputs
 
@@ -114,17 +114,24 @@ nltk.download("punkt", quiet=True)
 
 # Define the compute_metrics function
 def compute_metrics(eval_preds):
-    preds, labels = eval_preds
+    preds, _ = eval_preds  # Ignore labels
 
-    # Decode preds and labels
-    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+    # Decode predictions
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-    # Calculate ROUGE score
-    rouge = Rouge()
-    result = rouge.get_scores(decoded_preds, decoded_labels, avg=True)
-    return result
+    # Calculate average length of generated text
+    avg_length = np.mean([len(pred.split()) for pred in decoded_preds])
+
+    # Calculate diversity (ratio of unique words to total words)
+    unique_words = set()
+    total_words = 0
+    for pred in decoded_preds:
+        words = pred.split()
+        unique_words.update(words)
+        total_words += len(words)
+    diversity = len(unique_words) / total_words if total_words > 0 else 0
+
+    return {"avg_length": avg_length, "diversity": diversity}
 
 class SaveBestModelCallback(TrainerCallback):
     def __init__(self):
