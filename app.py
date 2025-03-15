@@ -4,8 +4,6 @@ import requests
 import pandas as pd
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
-import re
-import time
 import spacy
 import pytesseract
 from PIL import Image
@@ -101,23 +99,17 @@ test_dataset = Dataset.from_dict(test_dataset)
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this question: "
 
+# Define the preprocessing function
 def preprocess_function(examples):
     inputs = [prefix + doc for doc in examples["sentence"]]
     model_inputs = tokenizer(inputs, max_length=128, truncation=True)
-    
-    # Convert labels to strings and then tokenize
     labels = [str(label) for label in examples["label"]]  # Convert labels to strings
     labels = tokenizer(text_target=labels, max_length=512, truncation=True)
-    
-    # Ensure labels are lists of integers
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
-print("Before preprocessing:", train_dataset[0]["label"])
-train_dataset = train_dataset.map(preprocess_function, batched=True)
-print("After preprocessing:", train_dataset[0]["labels"])
-
 # Map the preprocessing function across our dataset
+train_dataset = train_dataset.map(preprocess_function, batched=True)
 test_dataset = test_dataset.map(preprocess_function, batched=True)
 
 # Ensure labels are lists of integers
@@ -128,6 +120,7 @@ def format_labels(examples):
 train_dataset = train_dataset.map(format_labels, batched=True)
 test_dataset = test_dataset.map(format_labels, batched=True)
 
+# Print sample labels to debug
 print("Sample labels from train_dataset:", train_dataset[0]["labels"])
 print("Sample labels from test_dataset:", test_dataset[0]["labels"])
 
@@ -216,4 +209,3 @@ def chatbot():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
