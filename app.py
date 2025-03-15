@@ -103,8 +103,12 @@ prefix = "Please answer this question: "
 def preprocess_function(examples):
     inputs = [prefix + doc for doc in examples["sentence"]]
     model_inputs = tokenizer(inputs, max_length=128, truncation=True)
+    
+    # Convert labels to strings and then tokenize
     labels = [str(label) for label in examples["label"]]  # Convert labels to strings
     labels = tokenizer(text_target=labels, max_length=512, truncation=True)
+    
+    # Ensure labels are lists of integers
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
