@@ -65,6 +65,9 @@ DATA_NAME = "financial_phrasebank"
 CONFIG_NAME = "sentences_allagree"
 financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
 
+# Print sample data from the dataset
+print("Sample data from the dataset:", financial_dataset['train'][0])
+
 # Split the financial dataset into training and testing datasets
 train_size = int(0.7 * len(financial_dataset['train']))
 train_dataset = financial_dataset['train'].select(range(train_size))
