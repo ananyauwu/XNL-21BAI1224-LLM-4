@@ -10,10 +10,10 @@ import spacy
 import pytesseract
 from PIL import Image
 import nltk
-import evaluate
 import numpy as np
 from datasets import load_dataset
 from transformers import T5Tokenizer, DataCollatorForSeq2Seq, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer, TrainerCallback
+from rouge import Rouge
 
 app = Flask(__name__)
 CORS(app)
@@ -112,7 +112,6 @@ test_dataset = preprocess_function(test_dataset)
 
 # Download NLTK data
 nltk.download("punkt", quiet=True)
-metric = evaluate.load("rouge")
 
 # Define the compute_metrics function
 def compute_metrics(eval_preds):
@@ -127,7 +126,8 @@ def compute_metrics(eval_preds):
     decoded_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in decoded_preds]
     decoded_labels = ["\n".join(nltk.sent_tokenize(label.strip())) for label in decoded_labels]
 
-    result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+    rouge = Rouge()
+    result = rouge.get_scores(decoded_preds, decoded_labels, avg=True)
     return result
 
 class SaveBestModelCallback(TrainerCallback):
