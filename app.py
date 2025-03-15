@@ -61,7 +61,7 @@ def parse_tabular_data(file_path):
     return df.to_dict()
 
 # Load the finqa dataset from Hugging Face
-ds = load_dataset("Aiera/finqa-verified")
+ds = load_dataset("bilalRahib/fiqa-personal-finance-dataset")
 
 # Apply the function to remove missing values
 ds = ds.filter(lambda x: all(v is not None for v in x.values()))
@@ -74,25 +74,27 @@ for i in range(10):
 # Print sample data from the dataset
 print("Sample data from the dataset:", ds['train'][0])
 
-# Split the financial dataset into training and testing datasets
+# Split the financial dataset into training, testing, and validation datasets
 train_size = int(0.7 * len(ds['train']))
+val_size = int(0.15 * len(ds['train']))
 train_dataset = ds['train'].select(range(train_size))
-test_dataset = ds['train'].select(range(train_size, len(ds['train'])))
+val_dataset = ds['train'].select(range(train_size, train_size + val_size))
+test_dataset = ds['train'].select(range(train_size + val_size, len(ds['train'])))
 
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this financial question: "
 
 # Define the preprocessing function
 def preprocess_function(examples):
-    # Combine the question and context into a single input string
-    inputs = [f"question: {q} context: {c}" for q, c in zip(examples["question"], examples["context_text"])]
+    # Combine the input and output into a single input string
+    inputs = [prefix + inp for inp in examples["input"]]
     
     # Tokenize inputs
     model_inputs = tokenizer(inputs, max_length=512, truncation=True, padding="max_length")
     
-    # Tokenize answers (target labels)
+    # Tokenize outputs (target labels)
     with tokenizer.as_target_tokenizer():
-        labels = tokenizer(examples["answer"], max_length=128, truncation=True, padding="max_length")
+        labels = tokenizer(examples["output"], max_length=128, truncation=True, padding="max_length")
     
     # Add labels to the model inputs
     model_inputs["labels"] = labels["input_ids"]
@@ -101,6 +103,7 @@ def preprocess_function(examples):
 
 # Apply the preprocessing function to the dataset
 train_dataset = train_dataset.map(preprocess_function, batched=True)
+val_dataset = val_dataset.map(preprocess_function, batched=True)
 test_dataset = test_dataset.map(preprocess_function, batched=True)
 
 print("After preprocessing:", train_dataset[0])
@@ -147,7 +150,7 @@ training_args = Seq2SeqTrainingArguments(
     per_device_eval_batch_size=4,
     weight_decay=0.01,
     save_total_limit=3,
-    num_train_epochs=3,
+    num_train_epochs=5,  # Train for 5 epochs
     predict_with_generate=True,
     push_to_hub=False,
     load_best_model_at_end=True,
@@ -160,7 +163,7 @@ trainer = Seq2SeqTrainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
-    eval_dataset=test_dataset,
+    eval_dataset=val_dataset,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
     callbacks=[SaveBestModelCallback()]
