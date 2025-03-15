@@ -67,9 +67,9 @@ ds = load_dataset("bilalRahib/fiqa-personal-finance-dataset")
 # Apply the function to remove missing values
 ds = ds.filter(lambda x: all(v is not None for v in x.values()))
 
-# Print the first 10 lines from the dataset
-print("First 10 lines from the dataset:")
-for i in range(10):
+# Print the first 3 lines from the dataset
+print("First 3 lines from the dataset:")
+for i in range(3):
     print(ds['train'][i])
 
 # Print sample data from the dataset
@@ -161,9 +161,9 @@ training_args = Seq2SeqTrainingArguments(
 )
 
 class DebugTrainer(Trainer):
-    def training_step(self, model, inputs):
+    def training_step(self, model, inputs, num_items_in_batch=None):
         try:
-            return super().training_step(model, inputs)
+            return super().training_step(model, inputs, num_items_in_batch)
         except Exception as e:
             print("Error during training step:", e)
             print("Inputs:", inputs)
