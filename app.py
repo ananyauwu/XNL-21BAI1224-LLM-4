@@ -20,7 +20,7 @@ CORS(app)
 nlp = spacy.load("en_core_web_sm")
 
 # Load the tokenizer, model, and data collator
-MODEL_NAME = "google/flan-t5-base"
+MODEL_NAME = "google/flan-t5-small"
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
 model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME)
 data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
@@ -143,19 +143,21 @@ class SaveBestModelCallback(TrainerCallback):
 # Set up training arguments
 training_args = Seq2SeqTrainingArguments(
     output_dir="./results",
-    evaluation_strategy="epoch",  # Use evaluation_strategy instead of eval_strategy
-    save_strategy="epoch",  # Ensure save strategy matches evaluation strategy
+    eval_strategy="epoch",
+    save_strategy="epoch",
     learning_rate=3e-4,
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=4,
+    per_device_train_batch_size=4,  # Reduce batch size for CPU
+    per_device_eval_batch_size=2,   # Reduce batch size for CPU
+    gradient_accumulation_steps=2,  # Use gradient accumulation
     weight_decay=0.01,
     save_total_limit=3,
-    num_train_epochs=5,  # Train for 5 epochs
+    num_train_epochs=5,
     predict_with_generate=True,
     push_to_hub=False,
     load_best_model_at_end=True,
     metric_for_best_model="eval_loss",
-    greater_is_better=False
+    greater_is_better=False,
+    no_cuda=True  # Force training on CPU
 )
 
 # Set up the trainer
