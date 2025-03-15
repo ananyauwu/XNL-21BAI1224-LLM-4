@@ -3,26 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Interface</title>
+    <title>Financial Chatbot</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #answer {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #333;
+            font-size: 1rem;
+            text-align: left;
+            white-space: pre-wrap; /* Preserve formatting for long responses */
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     <script>
         async function sendQuestion() {
             const question = document.getElementById('question').value;
-            const response = await fetch('/chatbot', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ question })
-            });
-            const data = await response.json();
-            document.getElementById('answer').innerText = data.answer || data.error;
+            const answerElement = document.getElementById('answer');
+            const loader = document.getElementById('loader');
+
+            // Show loading spinner
+            loader.style.display = 'block';
+            answerElement.innerText = '';
+
+            try {
+                const response = await fetch('/chatbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question })
+                });
+                const data = await response.json();
+                answerElement.innerText = data.answer || data.error;
+            } catch (error) {
+                answerElement.innerText = 'An error occurred. Please try again.';
+            } finally {
+                // Hide loading spinner
+                loader.style.display = 'none';
+            }
         }
     </script>
 </head>
 <body>
-    <h1>Chatbot Interface</h1>
-    <input type="text" id="question" placeholder="Enter your question here">
-    <button onclick="sendQuestion()">Submit</button>
-    <p id="answer"></p>
+    <div class="container">
+        <h1>Financial Chatbot</h1>
+        <input type="text" id="question" placeholder="Enter your financial question here">
+        <button onclick="sendQuestion()">Submit</button>
+        <div class="loader" id="loader"></div>
+        <p id="answer"></p>
+    </div>
 </body>
 </html>
