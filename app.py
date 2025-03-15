@@ -39,8 +39,6 @@ def get_env_variable(var_name, default=None):
     logging.info(f"Loaded environment variable: {var_name}")
     return value
 
-news_api_key = get_env_variable('NEWS_API_KEY')
-
 @app.route('/')
 def index():
     return app.send_static_file('interface.html')
@@ -70,7 +68,7 @@ financial_dataset = load_dataset(DATA_NAME)
 
 # Fetch news data from NewsAPI
 def fetch_news_data(query, from_date):
-    url = (f'https://newsapi.org/v2/everything?q={query}&from={from_date}&sortBy=popularity&apiKey={news_api_key}')
+    url = (f'https://newsapi.org/v2/everything?q={query}&from={from_date}&sortBy=popularity&apiKey=ce1ff6d5196d4f7d990304d44713d946')
     response = requests.get(url)
     if response.status_code == 200:
         return response.json().get('articles', [])
