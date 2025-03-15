@@ -71,9 +71,8 @@ def remove_missing_values(examples):
     return examples
 
 # Acquire the training data from Hugging Face
-DATA_NAME = "financial_phrasebank"
-CONFIG_NAME = "sentences_allagree"
-financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
+DATA_NAME = "finqa"
+financial_dataset = load_dataset(DATA_NAME)
 
 # Apply the function to remove missing values
 financial_dataset = financial_dataset.filter(lambda x: all(v is not None for v in x.values()))
@@ -94,18 +93,26 @@ test_dataset = financial_dataset['train'].select(range(train_size, len(financial
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this question: "
 
-# Define the preprocessing function to ignore labels and take sentences only
+# Define the preprocessing function
 def preprocess_function(examples):
-    # Use the sentences as both inputs and labels (for language modeling)
-    inputs = [prefix + doc for doc in examples["sentence"]]
+    # Combine the question and context into a single input string
+    inputs = [f"question: {q} context: {c}" for q, c in zip(examples["question"], examples["context"])]
     
     # Tokenize inputs
-    model_inputs = tokenizer(inputs, max_length=128, truncation=True, padding="max_length")
+    model_inputs = tokenizer(inputs, max_length=512, truncation=True, padding="max_length")
     
-    # Use the same input as the target (labels) for language modeling
-    model_inputs["labels"] = model_inputs["input_ids"]  # Set labels = input_ids
+    # Tokenize answers (target labels)
+    with tokenizer.as_target_tokenizer():
+        labels = tokenizer(examples["answer"], max_length=128, truncation=True, padding="max_length")
+    
+    # Add labels to the model inputs
+    model_inputs["labels"] = labels["input_ids"]
     
     return model_inputs
+
+# Apply the preprocessing function to the dataset
+train_dataset = train_dataset.map(preprocess_function, batched=True)
+test_dataset = test_dataset.map(preprocess_function, batched=True)
 
 print("After preprocessing:", train_dataset[0])
 
