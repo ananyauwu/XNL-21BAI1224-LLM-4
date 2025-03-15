@@ -78,6 +78,11 @@ financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
 # Apply the function to remove missing values
 financial_dataset = financial_dataset.filter(lambda x: all(v is not None for v in x.values()))
 
+# Print the first 20 lines from the dataset
+print("First 20 lines from the dataset:")
+for i in range(20):
+    print(financial_dataset['train'][i])
+
 # Print sample data from the dataset
 print("Sample data from the dataset:", financial_dataset['train'][0])
 
