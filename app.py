@@ -69,7 +69,7 @@ financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
 
 # Fetch news data from NewsAPI
 def fetch_news_data(query, from_date):
-    url = (f'http://newsapi.org/v2/everything?q={query}&from={from_date}&sortBy=popularity&apiKey=ce1ff6d5196d4f7d990304d44713d946')
+    url = (f'https://newsapi.org/v2/everything?q={query}&from={from_date}&sortBy=popularity&apiKey=ce1ff6d5196d4f7d990304d44713d946')
     response = requests.get(url)
     if response.status_code == 200:
         return response.json().get('articles', [])
