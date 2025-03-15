@@ -13,7 +13,7 @@ import nltk
 import evaluate
 import numpy as np
 from datasets import load_dataset
-from transformers import T5Tokenizer, DataCollatorForSeq2Seq, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import T5Tokenizer, DataCollatorForSeq2Seq, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer, TrainerCallback
 
 app = Flask(__name__)
 CORS(app)
@@ -130,6 +130,22 @@ def compute_metrics(eval_preds):
     result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
     return result
 
+class SaveBestModelCallback(TrainerCallback):
+    def __init__(self):
+        self.best_metric = None
+        self.best_model_path = None
+
+    def on_evaluate(self, args, state, control, **kwargs):
+        metrics = kwargs.get("metrics")
+        if metrics:
+            current_metric = metrics.get("eval_loss")
+            if self.best_metric is None or current_metric < self.best_metric:
+                self.best_metric = current_metric
+                self.best_model_path = os.path.join(args.output_dir, "best_model")
+                kwargs["model"].save_pretrained(self.best_model_path)
+                kwargs["tokenizer"].save_pretrained(self.best_model_path)
+                logging.info(f"New best model saved with eval_loss: {self.best_metric}")
+
 # Set up training arguments
 training_args = Seq2SeqTrainingArguments(
     output_dir="./results",
@@ -141,7 +157,10 @@ training_args = Seq2SeqTrainingArguments(
     save_total_limit=3,
     num_train_epochs=3,
     predict_with_generate=True,
-    push_to_hub=False
+    push_to_hub=False,
+    load_best_model_at_end=True,
+    metric_for_best_model="eval_loss",
+    greater_is_better=False
 )
 
 # Set up the trainer
@@ -152,7 +171,8 @@ trainer = Seq2SeqTrainer(
     eval_dataset=test_dataset,
     tokenizer=tokenizer,
     data_collator=data_collator,
-    compute_metrics=compute_metrics
+    compute_metrics=compute_metrics,
+    callbacks=[SaveBestModelCallback()]
 )
 
 # Fine-tune the model
