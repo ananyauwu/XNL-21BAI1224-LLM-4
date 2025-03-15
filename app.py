@@ -11,7 +11,7 @@ import pytesseract
 from PIL import Image
 import nltk
 import numpy as np
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 from transformers import T5Tokenizer, DataCollatorForSeq2Seq, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer, TrainerCallback
 from rouge import Rouge
 
@@ -94,6 +94,10 @@ train_size = int(0.7 * len(combined_data['sentence']))
 train_dataset = {'sentence': combined_data['sentence'][:train_size], 'label': combined_data['label'][:train_size]}
 test_dataset = {'sentence': combined_data['sentence'][train_size:], 'label': combined_data['label'][train_size:]}
 
+# Convert to Dataset format
+train_dataset = Dataset.from_dict(train_dataset)
+test_dataset = Dataset.from_dict(test_dataset)
+
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this question: "
 
@@ -107,8 +111,8 @@ def preprocess_function(examples):
     return model_inputs
 
 # Map the preprocessing function across our dataset
-train_dataset = preprocess_function(train_dataset)
-test_dataset = preprocess_function(test_dataset)
+train_dataset = train_dataset.map(preprocess_function, batched=True)
+test_dataset = test_dataset.map(preprocess_function, batched=True)
 
 # Download NLTK data
 nltk.download("punkt", quiet=True)
