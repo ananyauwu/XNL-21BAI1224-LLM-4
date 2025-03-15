@@ -12,6 +12,7 @@ import numpy as np
 from datasets import load_dataset, Dataset
 from transformers import T5Tokenizer, DataCollatorForSeq2Seq, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer, TrainerCallback
 from rouge import Rouge
+from transformers import Trainer
 
 app = Flask(__name__)
 CORS(app)
@@ -99,6 +100,11 @@ def preprocess_function(examples):
     # Add labels to the model inputs
     model_inputs["labels"] = labels["input_ids"]
     
+    # Debug: Print shapes of input tensors
+    print("Input IDs shape:", model_inputs["input_ids"][0].shape)
+    print("Attention Mask shape:", model_inputs["attention_mask"][0].shape)
+    print("Labels shape:", model_inputs["labels"][0].shape)
+    
     return model_inputs
 
 # Apply the preprocessing function to the dataset
@@ -160,8 +166,17 @@ training_args = Seq2SeqTrainingArguments(
     use_cpu=True  # Use CPU instead of no_cuda
 )
 
-# Set up the trainer
-trainer = Seq2SeqTrainer(
+class DebugTrainer(Trainer):
+    def training_step(self, model, inputs):
+        try:
+            return super().training_step(model, inputs)
+        except Exception as e:
+            print("Error during training step:", e)
+            print("Inputs:", inputs)
+            raise e
+
+# Use the DebugTrainer instead of the default Trainer
+trainer = DebugTrainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
