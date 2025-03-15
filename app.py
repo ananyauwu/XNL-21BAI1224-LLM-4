@@ -121,24 +121,16 @@ nltk.download("punkt", quiet=True)
 
 # Define the compute_metrics function
 def compute_metrics(eval_preds):
-    preds, _ = eval_preds  # Ignore labels
+    preds, labels = eval_preds
 
-    # Decode predictions
+    # Decode predictions and labels
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-    # Calculate average length of generated text
-    avg_length = np.mean([len(pred.split()) for pred in decoded_preds])
-
-    # Calculate diversity (ratio of unique words to total words)
-    unique_words = set()
-    total_words = 0
-    for pred in decoded_preds:
-        words = pred.split()
-        unique_words.update(words)
-        total_words += len(words)
-    diversity = len(unique_words) / total_words if total_words > 0 else 0
-
-    return {"avg_length": avg_length, "diversity": diversity}
+    # Calculate ROUGE score
+    rouge = Rouge()
+    result = rouge.get_scores(decoded_preds, decoded_labels, avg=True)
+    return result
 
 class SaveBestModelCallback(TrainerCallback):
     def __init__(self):
