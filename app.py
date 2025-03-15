@@ -105,13 +105,20 @@ prefix = "Please answer this question: "
 def preprocess_function(examples):
     inputs = [prefix + doc for doc in examples["sentence"]]
     model_inputs = tokenizer(inputs, max_length=128, truncation=True)
+    
+    # Convert labels to strings and then tokenize
     labels = [str(label) for label in examples["label"]]  # Convert labels to strings
     labels = tokenizer(text_target=labels, max_length=512, truncation=True)
+    
+    # Ensure labels are lists of integers
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
-# Map the preprocessing function across our dataset
+print("Before preprocessing:", train_dataset[0]["label"])
 train_dataset = train_dataset.map(preprocess_function, batched=True)
+print("After preprocessing:", train_dataset[0]["labels"])
+
+# Map the preprocessing function across our dataset
 test_dataset = test_dataset.map(preprocess_function, batched=True)
 
 # Ensure labels are lists of integers
@@ -182,7 +189,7 @@ trainer = Seq2SeqTrainer(
     args=training_args,
     train_dataset=train_dataset,
     eval_dataset=test_dataset,
-    data_collator=data_collator,  # Use data_collator instead of tokenizer
+    data_collator=data_collator,
     compute_metrics=compute_metrics,
     callbacks=[SaveBestModelCallback()]
 )
