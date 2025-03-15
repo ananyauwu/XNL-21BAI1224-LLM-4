@@ -182,8 +182,7 @@ trainer = Seq2SeqTrainer(
     args=training_args,
     train_dataset=train_dataset,
     eval_dataset=test_dataset,
-    tokenizer=tokenizer,
-    data_collator=data_collator,
+    data_collator=data_collator,  # Use data_collator instead of tokenizer
     compute_metrics=compute_metrics,
     callbacks=[SaveBestModelCallback()]
 )
