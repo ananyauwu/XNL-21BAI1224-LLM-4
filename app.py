@@ -60,13 +60,14 @@ def parse_tabular_data(file_path):
     df = pd.read_csv(file_path)
     return df.to_dict()
 
-# Define a function to handle null values/missing values in the dataset
-def handle_missing_values(examples):
+# Define a function to remove sets with missing values in the dataset
+def remove_missing_values(examples):
     for key in examples.keys():
         if isinstance(examples[key], list):
-            examples[key] = [value if value is not None else "N/A" for value in examples[key]]
+            examples[key] = [value for value in examples[key] if value is not None]
         else:
-            examples[key] = examples[key] if examples[key] is not None else "N/A"
+            if examples[key] is None:
+                return None
     return examples
 
 # Acquire the training data from Hugging Face
@@ -74,8 +75,8 @@ DATA_NAME = "financial_phrasebank"
 CONFIG_NAME = "sentences_allagree"
 financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
 
-# Apply the function to handle missing values
-financial_dataset = financial_dataset.map(handle_missing_values)
+# Apply the function to remove missing values
+financial_dataset = financial_dataset.filter(lambda x: all(v is not None for v in x.values()))
 
 # Print sample data from the dataset
 print("Sample data from the dataset:", financial_dataset['train'][0])
