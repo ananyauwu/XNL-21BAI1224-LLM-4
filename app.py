@@ -66,9 +66,9 @@ ds = load_dataset("Aiera/finqa-verified")
 # Apply the function to remove missing values
 ds = ds.filter(lambda x: all(v is not None for v in x.values()))
 
-# Print the first 20 lines from the dataset
-print("First 20 lines from the dataset:")
-for i in range(20):
+# Print the first 10 lines from the dataset
+print("First 10 lines from the dataset:")
+for i in range(10):
     print(ds['train'][i])
 
 # Print sample data from the dataset
@@ -80,7 +80,7 @@ train_dataset = ds['train'].select(range(train_size))
 test_dataset = ds['train'].select(range(train_size, len(ds['train'])))
 
 # We prefix our tasks with "answer the question"
-prefix = "Please answer this question: "
+prefix = "Please answer this financial question: "
 
 # Define the preprocessing function
 def preprocess_function(examples):
@@ -178,7 +178,7 @@ def chatbot():
         return jsonify({'error': 'No question provided'}), 400
 
     # Generate response using the fine-tuned model
-    inputs = tokenizer("Please answer this question: " + user_input, return_tensors="pt")
+    inputs = tokenizer("Please answer this financial question: " + user_input, return_tensors="pt")
     outputs = model.generate(**inputs)
     answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
