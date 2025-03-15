@@ -94,16 +94,10 @@ def preprocess_function(examples):
     model_inputs = tokenizer(inputs, max_length=512, truncation=True, padding="max_length")
     
     # Tokenize outputs (target labels)
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(examples["output"], max_length=128, truncation=True, padding="max_length")
+    labels = tokenizer(examples["output"], max_length=128, truncation=True, padding="max_length", return_tensors="pt")
     
     # Add labels to the model inputs
     model_inputs["labels"] = labels["input_ids"]
-    
-    # Debug: Print shapes of input tensors
-    print("Input IDs shape:", model_inputs["input_ids"][0].shape)
-    print("Attention Mask shape:", model_inputs["attention_mask"][0].shape)
-    print("Labels shape:", model_inputs["labels"][0].shape)
     
     return model_inputs
 
