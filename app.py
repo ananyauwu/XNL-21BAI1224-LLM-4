@@ -116,6 +116,8 @@ def preprocess_function(examples):
 train_dataset = train_dataset.map(preprocess_function, batched=True)
 test_dataset = test_dataset.map(preprocess_function, batched=True)
 
+print("After preprocessing:", train_dataset[0]["labels"])
+
 # Ensure labels are properly formatted
 def format_labels(examples):
     examples["labels"] = [[label] if isinstance(label, int) else label for label in examples["labels"]]
