@@ -60,35 +60,24 @@ def parse_tabular_data(file_path):
     df = pd.read_csv(file_path)
     return df.to_dict()
 
-# Define a function to remove sets with missing values in the dataset
-def remove_missing_values(examples):
-    for key in examples.keys():
-        if isinstance(examples[key], list):
-            examples[key] = [value for value in examples[key] if value is not None]
-        else:
-            if examples[key] is None:
-                return None
-    return examples
-
-# Acquire the training data from Hugging Face
-DATA_NAME = "finqa"
-financial_dataset = load_dataset(DATA_NAME)
+# Load the finqa dataset from Hugging Face
+ds = load_dataset("mihirinamdar/finqa")
 
 # Apply the function to remove missing values
-financial_dataset = financial_dataset.filter(lambda x: all(v is not None for v in x.values()))
+ds = ds.filter(lambda x: all(v is not None for v in x.values()))
 
 # Print the first 20 lines from the dataset
 print("First 20 lines from the dataset:")
 for i in range(20):
-    print(financial_dataset['train'][i])
+    print(ds['train'][i])
 
 # Print sample data from the dataset
-print("Sample data from the dataset:", financial_dataset['train'][0])
+print("Sample data from the dataset:", ds['train'][0])
 
 # Split the financial dataset into training and testing datasets
-train_size = int(0.7 * len(financial_dataset['train']))
-train_dataset = financial_dataset['train'].select(range(train_size))
-test_dataset = financial_dataset['train'].select(range(train_size, len(financial_dataset['train'])))
+train_size = int(0.7 * len(ds['train']))
+train_dataset = ds['train'].select(range(train_size))
+test_dataset = ds['train'].select(range(train_size, len(ds['train'])))
 
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this question: "
