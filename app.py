@@ -62,25 +62,27 @@ def parse_tabular_data(file_path):
     return df.to_dict()
 
 # Load the finqa dataset from Hugging Face
-ds = load_dataset("bilalRahib/fiqa-personal-finance-dataset", streaming=True)
+ds = load_dataset("bilalRahib/fiqa-personal-finance-dataset", split="train")
 
 # Apply the function to remove missing values
-ds = ds.filter(lambda x: x["input"] is not None and x["output"] is not None)
+ds = ds.filter(lambda x: all(v is not None for v in x.values())is not None)
 
 # Print the first 3 lines from the dataset
 print("First 3 lines from the dataset:")
-for i in range(3):
-    print(ds['train'][i])
+for i, example in enumerate(ds):
+    if i >= 3:
+        break
+    print(example)
 
 # Print sample data from the dataset
-print("Sample data from the dataset:", ds['train'][0])
+print("Sample data from the dataset:", ds[0])
 
 # Split the financial dataset into training, testing, and validation datasets
-train_size = int(0.7 * len(ds['train']))
-val_size = int(0.15 * len(ds['train']))
-train_dataset = ds['train'].select(range(train_size))
-val_dataset = ds['train'].select(range(train_size, train_size + val_size))
-test_dataset = ds['train'].select(range(train_size + val_size, len(ds['train'])))
+train_size = int(0.7 * len(ds))
+val_size = int(0.15 * len(ds))
+train_dataset = ds.select(range(train_size))
+val_dataset = ds.select(range(train_size, train_size + val_size))
+test_dataset = ds.select(range(train_size + val_size, len(ds)))
 
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this financial question: "
