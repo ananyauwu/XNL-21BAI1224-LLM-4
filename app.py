@@ -85,7 +85,7 @@ prefix = "Please answer this question: "
 # Define the preprocessing function
 def preprocess_function(examples):
     # Combine the question and context into a single input string
-    inputs = [f"question: {q} context: {c}" for q, c in zip(examples["question"], examples["context"])]
+    inputs = [f"question: {q} context: {c}" for q, c in zip(examples["question"], examples["context_text"])]
     
     # Tokenize inputs
     model_inputs = tokenizer(inputs, max_length=512, truncation=True, padding="max_length")
