@@ -161,7 +161,7 @@ class SaveBestModelCallback(TrainerCallback):
 # Set up training arguments
 training_args = Seq2SeqTrainingArguments(
     output_dir="./results",
-    evaluation_strategy="epoch",
+    eval_strategy="epoch",  # Use eval_strategy instead of evaluation_strategy
     save_strategy="epoch",  # Ensure save strategy matches evaluation strategy
     learning_rate=3e-4,
     per_device_train_batch_size=8,
