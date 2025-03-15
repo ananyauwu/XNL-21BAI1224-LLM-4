@@ -65,36 +65,10 @@ DATA_NAME = "financial_phrasebank"
 CONFIG_NAME = "sentences_allagree"
 financial_dataset = load_dataset(DATA_NAME, CONFIG_NAME)
 
-# Fetch news data from NewsAPI
-def fetch_news_data(query, from_date):
-    url = (f'https://newsapi.org/v2/everything?q={query}&from={from_date}&sortBy=popularity&apiKey=ce1ff6d5196d4f7d990304d44713d946')
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json().get('articles', [])
-    else:
-        logging.error(f"Error fetching news data: {response.status_code}")
-        return []
-
-news_data = fetch_news_data('finance', '2023-01-01')
-
-# Combine financial dataset and news data
-def combine_datasets(financial_dataset, news_data):
-    news_sentences = [article['description'] for article in news_data if article['description']]
-    news_labels = ['neutral'] * len(news_sentences)  # Assuming neutral sentiment for simplicity
-    combined_sentences = financial_dataset['train']['sentence'] + news_sentences
-    combined_labels = financial_dataset['train']['label'] + news_labels
-    return {'sentence': combined_sentences, 'label': combined_labels}
-
-combined_data = combine_datasets(financial_dataset, news_data)
-
-# Split the combined data into training and testing datasets
-train_size = int(0.7 * len(combined_data['sentence']))
-train_dataset = {'sentence': combined_data['sentence'][:train_size], 'label': combined_data['label'][:train_size]}
-test_dataset = {'sentence': combined_data['sentence'][train_size:], 'label': combined_data['label'][train_size:]}
-
-# Convert to Dataset format
-train_dataset = Dataset.from_dict(train_dataset)
-test_dataset = Dataset.from_dict(test_dataset)
+# Split the financial dataset into training and testing datasets
+train_size = int(0.7 * len(financial_dataset['train']))
+train_dataset = financial_dataset['train'].select(range(train_size))
+test_dataset = financial_dataset['train'].select(range(train_size, len(financial_dataset['train'])))
 
 # We prefix our tasks with "answer the question"
 prefix = "Please answer this question: "
