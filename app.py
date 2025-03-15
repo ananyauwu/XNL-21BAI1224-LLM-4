@@ -61,7 +61,7 @@ def parse_tabular_data(file_path):
     return df.to_dict()
 
 # Load the finqa dataset from Hugging Face
-ds = load_dataset("mihirinamdar/finqa")
+ds = load_dataset("Aiera/finqa-verified")
 
 # Apply the function to remove missing values
 ds = ds.filter(lambda x: all(v is not None for v in x.values()))
