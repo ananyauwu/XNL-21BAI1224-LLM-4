@@ -91,10 +91,10 @@ def preprocess_function(examples):
     inputs = [prefix + inp for inp in examples["input"]]
     
     # Tokenize inputs
-    model_inputs = tokenizer(inputs, max_length=512, truncation=True, padding="max_length")
+    model_inputs = tokenizer(inputs, max_length=128, truncation=True, padding="max_length")
     
     # Tokenize outputs (target labels)
-    labels = tokenizer(examples["output"], max_length=128, truncation=True, padding="max_length", return_tensors="pt")
+    labels = tokenizer(examples["output"], max_length=64, truncation=True, padding="max_length", return_tensors="pt")
     
     # Add labels to the model inputs
     model_inputs["labels"] = labels["input_ids"]
@@ -146,9 +146,9 @@ training_args = Seq2SeqTrainingArguments(
     eval_strategy="epoch",
     save_strategy="epoch",
     learning_rate=3e-4,
-    per_device_train_batch_size=4,  # Reduce batch size for CPU
-    per_device_eval_batch_size=2,   # Reduce batch size for CPU
-    gradient_accumulation_steps=2,  # Use gradient accumulation
+    per_device_train_batch_size=1,  # Reduce batch size to 1
+    per_device_eval_batch_size=1,   # Reduce batch size to 1
+    gradient_accumulation_steps=4,  # Use gradient accumulation
     weight_decay=0.01,
     save_total_limit=3,
     num_train_epochs=3,
